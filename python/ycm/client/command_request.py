@@ -31,6 +31,13 @@ class CommandRequest( BaseRequest ):
                                else 'filetype_default' )
     self._is_goto_command = (
         arguments and arguments[ 0 ].startswith( 'GoTo' ) )
+    if self._is_goto_command:
+      self._splitable = False
+      if len( arguments ) > 1:
+        # Use the last one so that it won't interfere with the official arguments
+        self._arguments = arguments[ : -1 ]
+        self._split_orientation = arguments[ -1 ]
+        self._splitable = True
     self._response = None
 
 
@@ -54,11 +61,16 @@ class CommandRequest( BaseRequest ):
   def RunPostCommandActionsIfNeeded( self ):
     if not self._is_goto_command or not self.Done() or not self._response:
       return
-
+    
     if isinstance( self._response, list ):
       defs = [ _BuildQfListItem( x ) for x in self._response ]
       vim.eval( 'setqflist( %s )' % repr( defs ) )
       vim.eval( 'youcompleteme#OpenGoToList()' )
+    elif self._splitable:
+      vimsupport.SplitToLocation( self._response[ 'filepath' ],
+                                 self._response[ 'line_num' ] + 1,
+                                 self._response[ 'column_num' ] + 1,
+                                 self._split_orientation )
     else:
       vimsupport.JumpToLocation( self._response[ 'filepath' ],
                                  self._response[ 'line_num' ] + 1,

@@ -231,6 +231,20 @@ def VimExpressionToPythonType( vim_expression ):
   except ValueError:
     return result
 
+def SplitToLocation( filename, line, column, orientation ): 
+  if filename == GetCurrentBufferFilepath():
+    # Add an entry to the jumplist if there is no need to split
+    vim.command( "normal! m'" )
+  else:
+    spliter = 'sp'
+    if orientation == 'v':
+      spliter = 'vs'
+    vim.command( '{0} {1}'.format( spliter, filename ) );
+
+  vim.current.window.cursor = ( line, column - 1 )
+
+  # Center the screen on the jumped-to location
+  vim.command( 'normal! zz' )
 
 # Both |line| and |column| need to be 1-based
 def JumpToLocation( filename, line, column ):
