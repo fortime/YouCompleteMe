@@ -38,10 +38,10 @@ class CommandRequest( BaseRequest ):
         self._arguments and self._arguments[ 0 ].startswith( 'GoTo' ) )
     if self._is_goto_command:
       self._splitable = False
-      if len( self.arguments ) > 1:
+      if len( self._arguments ) > 1:
         # Use the last one so that it won't interfere with the official arguments
-        self._arguments = self.arguments[ : -1 ]
-        self._split_orientation = self.arguments[ -1 ]
+        self._arguments = self._arguments[ : -1 ]
+        self._split_orientation = self._arguments[ -1 ]
         self._splitable = True
     self._response = None
 
@@ -73,13 +73,13 @@ class CommandRequest( BaseRequest ):
       vim.eval( 'youcompleteme#OpenGoToList()' )
     elif self._splitable:
       vimsupport.SplitToLocation( self._response[ 'filepath' ],
-                                 self._response[ 'line_num' ] + 1,
-                                 self._response[ 'column_num' ] + 1,
+                                 self._response[ 'line_num' ],
+                                 self._response[ 'column_num' ],
                                  self._split_orientation )
     else:
       vimsupport.JumpToLocation( self._response[ 'filepath' ],
-                                 self._response[ 'line_num' ] + 1,
-                                 self._response[ 'column_num' ] + 1)
+                                 self._response[ 'line_num' ],
+                                 self._response[ 'column_num' ])
 
 
 
@@ -101,5 +101,5 @@ def _BuildQfListItem( goto_data_item ):
   if 'line_num' in goto_data_item:
     qf_item[ 'lnum' ] = goto_data_item[ 'line_num' ]
   if 'column_num' in goto_data_item:
-    qf_item[ 'col' ] = goto_data_item[ 'column_num' ]
+    qf_item[ 'col' ] = goto_data_item[ 'column_num' ] - 1
   return qf_item
