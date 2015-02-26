@@ -18,9 +18,9 @@
 # along with YouCompleteMe.  If not, see <http://www.gnu.org/licenses/>.
 
 from ycm import vimsupport
-from ycm.server.responses import UnknownExtraConf
+from ycmd.responses import UnknownExtraConf
 from ycm.client.base_request import ( BaseRequest, BuildRequestData,
-                                     JsonFromFuture )
+                                      JsonFromFuture, HandleServerException )
 
 
 class EventNotification( BaseRequest ):
@@ -61,7 +61,7 @@ class EventNotification( BaseRequest ):
           else:
             _IgnoreExtraConfFile( e.extra_conf_file )
     except Exception as e:
-      vimsupport.PostVimMessage( str( e ) )
+      HandleServerException( e )
 
     return self._cached_response if self._cached_response else []
 

@@ -20,23 +20,28 @@
 import vim
 from ycm.client.base_request import BaseRequest, BuildRequestData, ServerError
 from ycm import vimsupport
-from ycm.utils import ToUtf8IfNeeded
+from ycmd.utils import ToUtf8IfNeeded
+
+def _EnsureBackwardsCompatibility( arguments ):
+  if arguments and arguments[ 0 ] == 'GoToDefinitionElseDeclaration':
+    arguments[ 0 ] = 'GoTo'
+  return arguments
 
 
 class CommandRequest( BaseRequest ):
   def __init__( self, arguments, completer_target = None ):
     super( CommandRequest, self ).__init__()
-    self._arguments = arguments
+    self._arguments = _EnsureBackwardsCompatibility( arguments )
     self._completer_target = ( completer_target if completer_target
                                else 'filetype_default' )
     self._is_goto_command = (
-        arguments and arguments[ 0 ].startswith( 'GoTo' ) )
+        self._arguments and self._arguments[ 0 ].startswith( 'GoTo' ) )
     if self._is_goto_command:
       self._splitable = False
-      if len( arguments ) > 1:
+      if len( self.arguments ) > 1:
         # Use the last one so that it won't interfere with the official arguments
-        self._arguments = arguments[ : -1 ]
-        self._split_orientation = arguments[ -1 ]
+        self._arguments = self.arguments[ : -1 ]
+        self._split_orientation = self.arguments[ -1 ]
         self._splitable = True
     self._response = None
 
@@ -94,7 +99,7 @@ def _BuildQfListItem( goto_data_item ):
   if 'description' in goto_data_item:
     qf_item[ 'text' ] = ToUtf8IfNeeded( goto_data_item[ 'description' ] )
   if 'line_num' in goto_data_item:
-    qf_item[ 'lnum' ] = goto_data_item[ 'line_num' ] + 1
+    qf_item[ 'lnum' ] = goto_data_item[ 'line_num' ]
   if 'column_num' in goto_data_item:
     qf_item[ 'col' ] = goto_data_item[ 'column_num' ]
   return qf_item
